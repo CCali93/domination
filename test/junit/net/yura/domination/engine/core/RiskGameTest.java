@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static net.yura.domination.engine.core.RiskGame.STATE_ROLLING;
 import org.junit.Assert;
 
 /**
@@ -17,6 +18,7 @@ import org.junit.Assert;
  */
 public class RiskGameTest extends TestCase {
     private RiskGame instance;
+    private Country c1, c2;
     
     public RiskGameTest(String testName) {
         super(testName);
@@ -362,9 +364,7 @@ public class RiskGameTest extends TestCase {
     }
 
     public void testSimpleAttackVictory() {
-        Country c1 = new Country(), c2 = new Country();
-        
-        initGame(2, 1, c1, c2);
+        initGame(2, 1);
 
         assertTrue(instance.attack(c1, c2));
         assertTrue(instance.rollA(1));
@@ -377,12 +377,11 @@ public class RiskGameTest extends TestCase {
         Assert.assertArrayEquals(new int[]{1, 0, 1, 2, 1, 1}, battleResults);
         
         assertEquals(RiskGame.STATE_BATTLE_WON, instance.getState());
+        assertEquals(c2.getOwner(), instance.setCurrentPlayer(0));
     }
     
     public void testThreeDiceAttackVictory() {
-        Country c1 = new Country(), c2 = new Country();
-        
-        initGame(4, 1, c1, c2);
+        initGame(4, 1);
 
         assertTrue(instance.attack(c1, c2));
         assertTrue(instance.rollA(3));
@@ -395,12 +394,11 @@ public class RiskGameTest extends TestCase {
         Assert.assertArrayEquals(new int[]{1, 0, 1, 2, 3, 3}, battleResults);
         
         assertEquals(RiskGame.STATE_BATTLE_WON, instance.getState());
+        assertEquals(c2.getOwner(), instance.setCurrentPlayer(0));
     }
     
-    public void testAttackVictoryWithAttackerLoss() {
-        Country c1 = new Country(), c2 = new Country();
-        
-        initGame(4, 2, c1, c2);
+    public void testAttackVictoryWithAttackerArmyLoss() {
+        initGame(4, 2);
         
         assertTrue(instance.attack(c1, c2));
         assertTrue(instance.rollA(3));
@@ -413,9 +411,64 @@ public class RiskGameTest extends TestCase {
         Assert.assertArrayEquals(new int[]{1, 1, 1, 0, 0, 0}, battleResults);
         
         assertEquals(RiskGame.STATE_ROLLING, instance.getState());
+        assertEquals(c2.getOwner(), instance.setCurrentPlayer(1));
     }
     
-    private void initGame(int p1Armies, int p2Armies, Country c1, Country c2) {
+    public void testAttackWithAttackerRetreat() {
+        initGame(3, 4);
+        
+        assertTrue(instance.attack(c1, c2));
+        assertTrue(instance.rollA(2));
+        assertTrue(instance.rollD(2));
+        
+        int[] p1Results = {3, 4},
+              p2Results = {6, 5};
+        
+        int[] battleResults = instance.battle(p1Results, p2Results);
+        Assert.assertArrayEquals(new int[]{1, 2, 0, 0, 0, 0}, battleResults);
+        
+        assertEquals(RiskGame.STATE_ATTACKING, instance.getState());
+        assertEquals(c2.getOwner(), instance.setCurrentPlayer(1));
+    }
+    
+    public void testAttackWithContinuation() {
+        initGame(4, 4);
+        
+        assertTrue(instance.attack(c1, c2));
+        assertTrue(instance.rollA(2));
+        assertTrue(instance.rollD(2));
+        
+        int[] p1Results = {3, 4},
+              p2Results = {6, 5};
+        
+        int[] battleResults = instance.battle(p1Results, p2Results);
+        Assert.assertArrayEquals(new int[]{1, 2, 0, 0, 0, 0}, battleResults);
+        
+        assertEquals(RiskGame.STATE_ROLLING, instance.getState());
+        assertEquals(c2.getOwner(), instance.setCurrentPlayer(1));
+    }
+    
+    public void testDefenseWithThreeDice() {
+        initGame(15, 10);
+        
+        assertTrue(instance.attack(c1, c2));
+        assertTrue(instance.rollA(3));
+        assertTrue(instance.rollD(3));
+        
+        int[] p1Results = {3, 4, 1},
+              p2Results = {6, 2, 3};
+        
+        int[] battleResults = instance.battle(p1Results, p2Results);
+        Assert.assertArrayEquals(new int[]{1, 2, 1, 0, 0, 0}, battleResults);
+        
+        assertEquals(RiskGame.STATE_ROLLING, instance.getState());
+        assertEquals(c2.getOwner(), instance.setCurrentPlayer(1));
+    }
+    
+    private void initGame(int p1Armies, int p2Armies) {
+        c1 = new Country();
+        c2 = new Country();
+        
         instance.addPlayer(Player.PLAYER_AI_CRAP, "p1", 255, "");
         instance.addPlayer(Player.PLAYER_AI_CRAP, "p2", 0, "");
         
