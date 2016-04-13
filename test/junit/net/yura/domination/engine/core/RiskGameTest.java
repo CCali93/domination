@@ -4,10 +4,21 @@ import java.io.File;
 import junit.framework.TestCase;
 import net.yura.domination.engine.RiskUIUtil;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import static net.yura.domination.engine.core.RiskGame.STATE_ROLLING;
+import org.junit.Assert;
+
 /**
  * @author Yur Mamyrin
  */
 public class RiskGameTest extends TestCase {
+    private RiskGame instance;
+    private Country c1, c2;
     
     public RiskGameTest(String testName) {
         super(testName);
@@ -15,19 +26,7 @@ public class RiskGameTest extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    /**
-     * Test of trade method, of class RiskGame.
-     */
-    public void testTrade() {
-        System.out.println("trade");
-
-        RiskGame instance;
+        
         try {
             RiskUIUtil.mapsdir = new File("./game/Domination/maps").toURI().toURL();
             instance = new RiskGame();
@@ -35,6 +34,17 @@ public class RiskGameTest extends TestCase {
         catch(Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+    
+    /**
+     * Test of trade method, of class RiskGame.
+     */
+    public void testTrade() {
+        System.out.println("trade");
 
         //Country country =  new Country(1, "name", "Full Name", new Continent("name", "Full Name", 5, 0xFFFF0000), 10, 10);
 
@@ -353,4 +363,154 @@ public class RiskGameTest extends TestCase {
         
     }
 
+    public void testSimpleAttackVictory() {
+        initGame(2, 1);
+
+        assertTrue(instance.attack(c1, c2));
+        assertTrue(instance.rollA(1));
+        assertTrue(instance.rollD(1));
+        
+        int[] p1Results = {6},
+              p2Results = {3};
+        
+        int[] battleResults = instance.battle(p1Results, p2Results);
+        Assert.assertArrayEquals(new int[]{1, 0, 1, 2, 1, 1}, battleResults);
+        
+        assertEquals(RiskGame.STATE_BATTLE_WON, instance.getState());
+        assertEquals(c2.getOwner(), instance.setCurrentPlayer(0));
+    }
+    
+    public void testThreeDiceAttackVictory() {
+        initGame(4, 1);
+
+        assertTrue(instance.attack(c1, c2));
+        assertTrue(instance.rollA(3));
+        assertTrue(instance.rollD(1));
+        
+        int[] p1Results = {4, 4, 4},
+              p2Results = {3};
+        
+        int[] battleResults = instance.battle(p1Results, p2Results);
+        Assert.assertArrayEquals(new int[]{1, 0, 1, 2, 3, 3}, battleResults);
+        
+        assertEquals(RiskGame.STATE_BATTLE_WON, instance.getState());
+        assertEquals(c2.getOwner(), instance.setCurrentPlayer(0));
+    }
+    
+    public void testAttackVictoryWithAttackerArmyLoss() {
+        initGame(4, 2);
+        
+        assertTrue(instance.attack(c1, c2));
+        assertTrue(instance.rollA(3));
+        assertTrue(instance.rollD(2));
+        
+        int[] p1Results = {4, 4, 4},
+              p2Results = {6, 2};
+        
+        int[] battleResults = instance.battle(p1Results, p2Results);
+        Assert.assertArrayEquals(new int[]{1, 1, 1, 0, 0, 0}, battleResults);
+        
+        assertEquals(RiskGame.STATE_ROLLING, instance.getState());
+        assertEquals(c2.getOwner(), instance.setCurrentPlayer(1));
+    }
+    
+    public void testAttackWithAttackerRetreat() {
+        initGame(3, 4);
+        
+        assertTrue(instance.attack(c1, c2));
+        assertTrue(instance.rollA(2));
+        assertTrue(instance.rollD(2));
+        
+        int[] p1Results = {3, 4},
+              p2Results = {6, 5};
+        
+        int[] battleResults = instance.battle(p1Results, p2Results);
+        Assert.assertArrayEquals(new int[]{1, 2, 0, 0, 0, 0}, battleResults);
+        
+        assertEquals(RiskGame.STATE_ATTACKING, instance.getState());
+        assertEquals(c2.getOwner(), instance.setCurrentPlayer(1));
+    }
+    
+    public void testAttackWithContinuation() {
+        initGame(4, 4);
+        
+        assertTrue(instance.attack(c1, c2));
+        assertTrue(instance.rollA(2));
+        assertTrue(instance.rollD(2));
+        
+        int[] p1Results = {3, 4},
+              p2Results = {6, 5};
+        
+        int[] battleResults = instance.battle(p1Results, p2Results);
+        Assert.assertArrayEquals(new int[]{1, 2, 0, 0, 0, 0}, battleResults);
+        
+        assertEquals(RiskGame.STATE_ROLLING, instance.getState());
+        assertEquals(c2.getOwner(), instance.setCurrentPlayer(1));
+    }
+    
+    public void testDefenseWithThreeDice() {
+        initGame(15, 10);
+        
+        assertTrue(instance.attack(c1, c2));
+        assertTrue(instance.rollA(3));
+        assertTrue(instance.rollD(3));
+        
+        int[] p1Results = {3, 4, 1},
+              p2Results = {6, 2, 3};
+        
+        int[] battleResults = instance.battle(p1Results, p2Results);
+        Assert.assertArrayEquals(new int[]{1, 2, 1, 0, 0, 0}, battleResults);
+        
+        assertEquals(RiskGame.STATE_ROLLING, instance.getState());
+        assertEquals(c2.getOwner(), instance.setCurrentPlayer(1));
+    }
+    
+    private void initGame(int p1Armies, int p2Armies) {
+        c1 = new Country();
+        c2 = new Country();
+        
+        instance.addPlayer(Player.PLAYER_AI_CRAP, "p1", 255, "");
+        instance.addPlayer(Player.PLAYER_AI_CRAP, "p2", 0, "");
+        
+        c1.addNeighbour(c2);
+        c1.addArmies(p1Armies);
+        
+        c2.addArmies(p2Armies);
+        
+        Player p2 = instance.setCurrentPlayer(1);
+        c2.setOwner(p2);
+        
+        Player p1 = instance.setCurrentPlayer(0);
+        c1.setOwner(p1);
+        
+        try {
+            instance.startGame(
+                RiskGame.MODE_DOMINATION,
+                RiskGame.CARD_FIXED_SET,
+                true,
+                true
+            );
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        Field gameState = null;
+        try {
+            gameState = instance.getClass().getDeclaredField("gameState");
+        } catch (NoSuchFieldException ex) {
+            ex.printStackTrace();
+        } catch (SecurityException ex) {
+            ex.printStackTrace();
+        }
+        
+        gameState.setAccessible(true);
+        
+        try {
+            gameState.set(instance, RiskGame.STATE_ATTACKING);
+        } catch (IllegalArgumentException ex) {
+            ex.printStackTrace();
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace();
+        }
+    }
 }
