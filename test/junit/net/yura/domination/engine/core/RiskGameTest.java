@@ -7,9 +7,11 @@ import net.yura.domination.engine.RiskUIUtil;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static net.yura.domination.engine.core.RiskGame.MODE_SECRET_MISSION;
 import static net.yura.domination.engine.core.RiskGame.STATE_ROLLING;
 import org.junit.Assert;
 
@@ -139,18 +141,6 @@ public class RiskGameTest extends TestCase {
         assertEquals(4, instance.getTradeAbsValue(Card.CAVALRY, Card.WILDCARD, Card.WILDCARD, RiskGame.CARD_INCREASING_SET) );
 
 
-
-
-
-
-
-
-
-
-
-
-
-
         int all_INFANTRY = 4;
         int all_CAVALRY = 6;
         int all_CANNON = 8;
@@ -248,14 +238,6 @@ public class RiskGameTest extends TestCase {
         assertEquals(all_DIFF, instance.getTradeAbsValue(Card.INFANTRY, Card.WILDCARD, Card.WILDCARD, RiskGame.CARD_FIXED_SET) );
         assertEquals(all_DIFF, instance.getTradeAbsValue(Card.CAVALRY, Card.WILDCARD, Card.WILDCARD, RiskGame.CARD_FIXED_SET) );
 
-
-        
-        
-        
-        
-        
-        
-        
         
         
         all_INFANTRY = 6;//4;
@@ -512,5 +494,156 @@ public class RiskGameTest extends TestCase {
         } catch (IllegalAccessException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public void testDominationModeWin() {
+        
+        System.out.println("win");
+        
+        instance.addPlayer(Player.PLAYER_AI_CRAP, "p1", 255, "");
+        instance.addPlayer(Player.PLAYER_AI_CRAP, "p2", 0, "");
+        
+        Player p2 = instance.setCurrentPlayer(1);
+        Player p1 = instance.setCurrentPlayer(0);
+        
+        int cuntreeCount = 11;
+        ArrayList<Country> countries = new ArrayList<Country>();
+        for( int i = countries.size(); i<cuntreeCount; i++){
+            Country c = new Country();
+            c.setOwner(p1);
+            countries.add(c);
+        }
+        
+        c1 = new Country();
+        countries.add(c1);
+        c1.setOwner(p2);
+        
+        try {
+            instance.startGame(
+                RiskGame.MODE_DOMINATION,
+                RiskGame.CARD_FIXED_SET,
+                true,
+                true
+            );
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        Field gameState = null;
+        try {
+            gameState = instance.getClass().getDeclaredField("gameState");
+        } catch (NoSuchFieldException ex) {
+            ex.printStackTrace();
+        } catch (SecurityException ex) {
+            ex.printStackTrace();
+        }
+        
+        gameState.setAccessible(true);
+        
+        assertEquals(instance.checkPlayerWon(), false);
+    }
+    
+    public void testCapitalModeWin() {
+        
+        System.out.println("win");
+        
+        instance.addPlayer(Player.PLAYER_AI_CRAP, "p1", 255, "");
+        instance.addPlayer(Player.PLAYER_AI_CRAP, "p2", 0, "");
+        
+        Player p2 = instance.setCurrentPlayer(1);
+        Player p1 = instance.setCurrentPlayer(0);
+        
+        int cuntreeCount = 11;
+        ArrayList<Country> countries = new ArrayList<Country>();
+        for( int i = countries.size(); i<cuntreeCount; i++){
+            Country c = new Country();
+            c.setOwner(p1);
+            countries.add(c);
+        }
+        
+        c1 = new Country();
+        c2 = new Country();
+        countries.add(c1);
+        countries.add(c2);
+        p1.setCapital(c1);
+        p2.setCapital(c2);
+        c2.setOwner(p2);
+        c1.setOwner(p1);
+        
+        try {
+            instance.startGame(
+                RiskGame.MODE_CAPITAL,
+                RiskGame.CARD_FIXED_SET,
+                true,
+                true
+            );
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        Field gameState = null;
+        try {
+            gameState = instance.getClass().getDeclaredField("gameState");
+        } catch (NoSuchFieldException ex) {
+            ex.printStackTrace();
+        } catch (SecurityException ex) {
+            ex.printStackTrace();
+        }
+        
+        gameState.setAccessible(true);
+        
+        assertEquals(instance.checkPlayerWon(), false);
+    }
+    
+    public void testMissionModeWin() {
+        
+        System.out.println("win");
+        
+        instance.addPlayer(Player.PLAYER_AI_CRAP, "p1", 255, "");
+        instance.addPlayer(Player.PLAYER_AI_CRAP, "p2", 0, "");
+        
+        Player p2 = instance.setCurrentPlayer(1);
+        Player p1 = instance.setCurrentPlayer(0);
+        
+        int cuntreeCount = 11;
+        ArrayList<Country> countries = new ArrayList<Country>();
+        for( int i = countries.size(); i<cuntreeCount; i++){
+            Country c = new Country();
+            c.setOwner(p1);
+            countries.add(c);
+        }
+        
+        c1 = new Country();
+        c2 = new Country();
+        countries.add(c1);
+        countries.add(c2);
+        p1.setCapital(c1);
+        p2.setCapital(c2);
+        c2.setOwner(p2);
+        c1.setOwner(p1);
+        
+        try {
+            instance.startGame(
+                RiskGame.MODE_SECRET_MISSION,
+                RiskGame.CARD_FIXED_SET,
+                true,
+                true
+            );
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        Field gameState = null;
+        try {
+            gameState = instance.getClass().getDeclaredField("gameState");
+        } catch (NoSuchFieldException ex) {
+            ex.printStackTrace();
+        } catch (SecurityException ex) {
+            ex.printStackTrace();
+        }
+        
+        gameState.setAccessible(true);
+        
+        assertEquals(instance.checkPlayerWon(), false);
     }
 }
