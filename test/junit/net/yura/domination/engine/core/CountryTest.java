@@ -24,7 +24,7 @@ import org.junit.Test;
  */
 public class CountryTest {
     
-        static private RiskGame instance;
+    static private RiskGame instance;
     private Country c1, c2, c3, c4;
     private Continent ct;
 

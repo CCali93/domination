@@ -7,6 +7,7 @@ package net.yura.domination.engine.core;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static junit.framework.Assert.assertTrue;
@@ -114,12 +115,26 @@ public class PlayerTest {
         player.setCapital(pc);
         player.setAutoDefend(true);
         player.setAutoEndGo(false);
+        player.setType(Player.PLAYER_AI_HARD);
         
         //Assert
         assertTrue(player.getAutoDefend());
         assertTrue(!player.getAutoEndGo());
         assertTrue(player.getCapital() == pc);
         assertTrue(player.getColor() == 255);
+        assertTrue(!player.isAlive());
+        assertTrue(player.getType() == Player.PLAYER_AI_HARD);      
+    }
+    
+    @Test
+    public void playerTerritoriesTest(){
+        Player player = instance.setCurrentPlayer(1);
+        c1.setOwner(player);
+        c2.setOwner(player);
+        c3.setOwner(player);
+        
+        Vector v = player.getTerritoriesOwned();
+        assertTrue(v.capacity() == 10);
     }
 
     @Test
@@ -148,7 +163,7 @@ public class PlayerTest {
         int[] battleResults = instance.battle(humanResults, aiResults);
         
         for(int i: battleResults){
-            System.out.println(i);
+           // System.out.println(i);
         }
         
  //       System.out.println(human.getNoArmies() + " " + human.getNoTerritoriesOwned());
