@@ -101,10 +101,24 @@ public class PlayerTest {
     public void playerArmiesTest(){
         Player player = instance.setCurrentPlayer(1);
         assertTrue(player.getNoArmies() == 0);
+        assertTrue(player.getNoTerritoriesOwned() == 0);
+    }
+    
+    @Test
+    public void modifyPlayerTest(){
+        Player player = new Player(1, "Player", 0, "address");
+        player.setColor(255);
+        player.setAddress("address1");
+        Country pc = new Country();
+        player.setCapital(pc);
+        player.setAutoDefend(true);
+        player.setAutoEndGo(false);
         
-        c4.setOwner(player);
-        System.out.println(player.getNoArmies());
-        System.out.println(player.getNoTerritoriesOwned());
+        //Assert
+        assertTrue(player.getAutoDefend());
+        assertTrue(!player.getAutoEndGo());
+        assertTrue(player.getCapital() == pc);
+        assertTrue(player.getColor() == 255);
     }
 
     @Test
@@ -125,7 +139,7 @@ public class PlayerTest {
         
         assertTrue(instance.attack(c4, c1));
         assertTrue(instance.rollA(3));
-        assertTrue(instance.rollD(1));
+//        assertTrue(instance.rollD(1));
         
         int[] humanResults = {6,6,6};
         int[] aiResults = {3,4};
@@ -135,6 +149,10 @@ public class PlayerTest {
         for(int i: battleResults){
             System.out.println(i);
         }
+        
+ //       System.out.println(human.getNoArmies() + " " + human.getNoTerritoriesOwned());
+        
+
 
     }
 
