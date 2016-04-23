@@ -43,7 +43,7 @@ public class PlayerTest {
     }
     
     @Before
-    public void pretest(){
+    public void before(){
         c1 = new Country();
         c2 = new Country();
         c3 = new Country();
@@ -80,15 +80,41 @@ public class PlayerTest {
             Logger.getLogger(PlayerTest.class.getName()).log(Level.SEVERE, null, ex);
         } 
     }
+    
+    @Test
+    public void renamePlayerTest(){
+        Player player = instance.setCurrentPlayer(0);
+        assertTrue((player.getName()).equals("Player1"));
+        player.rename("Player0");
+        assertTrue((player.getName()).equals("Player0"));
+    }
+    
+    @Test
+    public void playerPropertiesTest(){
+        Player player = instance.setCurrentPlayer(1);
+        assertTrue(player.toString().equals("Player2"));
+        assertTrue(player.getColor() == 99);
+        assertTrue(player.getAddress().equals("human"));
+    }
+    
+    @Test
+    public void playerArmiesTest(){
+        Player player = instance.setCurrentPlayer(1);
+        assertTrue(player.getNoArmies() == 0);
+        
+        c4.setOwner(player);
+        System.out.println(player.getNoArmies());
+        System.out.println(player.getNoTerritoriesOwned());
+    }
 
     @Test
     public void EliminatePlayerTest() {
-        Player ai = instance.setCurrentPlayer(1);
+        Player ai = instance.setCurrentPlayer(0);
         c1.setOwner(ai);
         c2.setOwner(ai);
         c3.setOwner(ai);
         
-        Player human = instance.setCurrentPlayer(0);
+        Player human = instance.setCurrentPlayer(1);
         c4.setOwner(human);
         
         try {
