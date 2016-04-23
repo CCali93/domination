@@ -95,6 +95,7 @@ public class PlayerTest {
         assertTrue(player.toString().equals("Player2"));
         assertTrue(player.getColor() == 99);
         assertTrue(player.getAddress().equals("human"));
+        assertTrue(player.getType() == Player.PLAYER_HUMAN);
     }
     
     @Test
