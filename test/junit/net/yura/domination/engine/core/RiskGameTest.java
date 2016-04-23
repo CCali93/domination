@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static net.yura.domination.engine.core.RiskGame.MODE_SECRET_MISSION;
@@ -21,6 +22,7 @@ import org.junit.Assert;
 public class RiskGameTest extends TestCase {
     private RiskGame instance;
     private Country c1, c2;
+    private Player p1, p2;
     
     public RiskGameTest(String testName) {
         super(testName);
@@ -344,13 +346,55 @@ public class RiskGameTest extends TestCase {
         
         
     }
+    
+    public void testGameProperties(){
+        initGame(15,10);
+        assertTrue(instance.getMapFile().equals("luca.map"));
+        assertTrue(instance.getState() == 3);
+        assertTrue(instance.getCurrentPlayer() == p1);
+        
+        Vector v = instance.getPlayers();
+        assertTrue(v.get(0) == p1);
+        assertTrue(instance.getMapName().equals("World War Map"));
+        assertTrue(instance.getImageMap().equals("luca_map.gif"));
+        assertTrue(instance.getImagePic().equals("luca_pic.jpg"));
+        
+        assertTrue(instance.getNoContinents() == instance.getContinents().length);
+        assertTrue(instance.getNoContinentsOwned(p1) == 0);
+        assertTrue(instance.getNoCards() == instance.getCards().size());
+        assertTrue(instance.getCountries().length == instance.getNoCountries());
+        assertTrue(instance.getNoMissions() == instance.getMissions().size());
+        assertTrue(instance.getVersion() == 1);
+        assertTrue(instance.getPlayer("p1") == p1);
+        
+    }
+    
+    public void testGameModify(){
+        Country[] co = {c1, c2};
+        instance.setCountries(co);
+        assertTrue(instance.getCountries().length == 2);
+        
+        Continent ct0 = new Continent("NA", "North America", 50, 1);
+        Continent ct1 = new Continent("SA", "South America", 45, 2);
+        
+        Continent[] cn = {ct0, ct1};
+        instance.setContinents(cn);
+        assertTrue(instance.getContinents().length == 2);
+        
+        instance.setVersion(2);
+        assertTrue(instance.getVersion() == 2);
+    }
 
     public void testSimpleAttackVictory() {
         initGame(2, 1);
 
+        assertTrue(instance.getPlayers().size() == 2);
         assertTrue(instance.attack(c1, c2));
         assertTrue(instance.rollA(1));
         assertTrue(instance.rollD(1));
+        
+        assertTrue(instance.getAttackerDice() == 1);
+        assertTrue(instance.getDefenderDice() == 1);
         
         int[] p1Results = {6},
               p2Results = {3};
@@ -383,11 +427,16 @@ public class RiskGameTest extends TestCase {
         initGame(4, 2);
         
         assertTrue(instance.attack(c1, c2));
+        assertTrue(instance.getAttacker() == c1);
+        assertTrue(instance.getDefender() == c2);
+        
         assertTrue(instance.rollA(3));
         assertTrue(instance.rollD(2));
         
         int[] p1Results = {4, 4, 4},
               p2Results = {6, 2};
+        
+        
         
         int[] battleResults = instance.battle(p1Results, p2Results);
         Assert.assertArrayEquals(new int[]{1, 1, 1, 0, 0, 0}, battleResults);
@@ -411,6 +460,8 @@ public class RiskGameTest extends TestCase {
         
         assertEquals(RiskGame.STATE_ATTACKING, instance.getState());
         assertEquals(c2.getOwner(), instance.setCurrentPlayer(1));
+        
+        assertTrue(!instance.canContinue());
     }
     
     public void testAttackWithContinuation() {
@@ -459,10 +510,10 @@ public class RiskGameTest extends TestCase {
         
         c2.addArmies(p2Armies);
         
-        Player p2 = instance.setCurrentPlayer(1);
+        p2 = instance.setCurrentPlayer(1);
         c2.setOwner(p2);
         
-        Player p1 = instance.setCurrentPlayer(0);
+        p1 = instance.setCurrentPlayer(0);
         c1.setOwner(p1);
         
         try {
@@ -503,8 +554,8 @@ public class RiskGameTest extends TestCase {
         instance.addPlayer(Player.PLAYER_AI_CRAP, "p1", 255, "");
         instance.addPlayer(Player.PLAYER_AI_CRAP, "p2", 0, "");
         
-        Player p2 = instance.setCurrentPlayer(1);
-        Player p1 = instance.setCurrentPlayer(0);
+        p2 = instance.setCurrentPlayer(1);
+        p1 = instance.setCurrentPlayer(0);
         
         int cuntreeCount = 11;
         ArrayList<Country> countries = new ArrayList<Country>();
@@ -550,8 +601,8 @@ public class RiskGameTest extends TestCase {
         instance.addPlayer(Player.PLAYER_AI_CRAP, "p1", 255, "");
         instance.addPlayer(Player.PLAYER_AI_CRAP, "p2", 0, "");
         
-        Player p2 = instance.setCurrentPlayer(1);
-        Player p1 = instance.setCurrentPlayer(0);
+        p2 = instance.setCurrentPlayer(1);
+        p1 = instance.setCurrentPlayer(0);
         
         int cuntreeCount = 11;
         ArrayList<Country> countries = new ArrayList<Country>();
@@ -602,8 +653,8 @@ public class RiskGameTest extends TestCase {
         instance.addPlayer(Player.PLAYER_AI_CRAP, "p1", 255, "");
         instance.addPlayer(Player.PLAYER_AI_CRAP, "p2", 0, "");
         
-        Player p2 = instance.setCurrentPlayer(1);
-        Player p1 = instance.setCurrentPlayer(0);
+        p2 = instance.setCurrentPlayer(1);
+        p1 = instance.setCurrentPlayer(0);
         
         int cuntreeCount = 11;
         ArrayList<Country> countries = new ArrayList<Country>();
