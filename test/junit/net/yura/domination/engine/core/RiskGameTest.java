@@ -359,17 +359,36 @@ public class RiskGameTest extends TestCase {
         assertTrue(instance.getImageMap().equals("luca_map.gif"));
         assertTrue(instance.getImagePic().equals("luca_pic.jpg"));
         
-        assertTrue(instance.getNoContinents() == 6);
-        assertTrue(instance.getContinents().length == 6);
+        assertTrue(instance.getNoContinents() == instance.getContinents().length);
         assertTrue(instance.getNoContinentsOwned(p1) == 0);
-        assertTrue(instance.getNoCards() == 44);
+        assertTrue(instance.getNoCards() == instance.getCards().size());
+        assertTrue(instance.getCountries().length == instance.getNoCountries());
+        assertTrue(instance.getNoMissions() == instance.getMissions().size());
+        assertTrue(instance.getVersion() == 1);
+        assertTrue(instance.getPlayer("p1") == p1);
+        
     }
     
-    
+    public void testGameModify(){
+        Country[] co = {c1, c2};
+        instance.setCountries(co);
+        assertTrue(instance.getCountries().length == 2);
+        
+        Continent ct0 = new Continent("NA", "North America", 50, 1);
+        Continent ct1 = new Continent("SA", "South America", 45, 2);
+        
+        Continent[] cn = {ct0, ct1};
+        instance.setContinents(cn);
+        assertTrue(instance.getContinents().length == 2);
+        
+        instance.setVersion(2);
+        assertTrue(instance.getVersion() == 2);
+    }
 
     public void testSimpleAttackVictory() {
         initGame(2, 1);
 
+        assertTrue(instance.getPlayers().size() == 2);
         assertTrue(instance.attack(c1, c2));
         assertTrue(instance.rollA(1));
         assertTrue(instance.rollD(1));
@@ -441,6 +460,8 @@ public class RiskGameTest extends TestCase {
         
         assertEquals(RiskGame.STATE_ATTACKING, instance.getState());
         assertEquals(c2.getOwner(), instance.setCurrentPlayer(1));
+        
+        assertTrue(!instance.canContinue());
     }
     
     public void testAttackWithContinuation() {
